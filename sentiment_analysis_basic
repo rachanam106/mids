@@ -1,0 +1,49 @@
+{
+  "cells": [
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {},
+      "outputs": [],
+      "source": [
+        "import pandas as pd\n",
+        "import numpy as np\n",
+        "from textblob import TextBlob\n",
+        "from sklearn.model_selection import train_test_split\n",
+        "from sklearn.feature_extraction.text import CountVectorizer\n",
+        "from sklearn.neighbors import KNeighborsClassifier\n",
+        "from sklearn.metrics import accuracy_score, classification_report, confusion_matrix"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {},
+      "outputs": [],
+      "source": [
+        "# Load dataset\n",
+        "df = pd.read_csv(\"Mental-Health-Twitter.csv\")"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {},
+      "outputs": [],
+      "source": [
+        "# Keep only the tweet text\n",
+        "df = df[['post_text']]\n",
+        "\n",
+        "# Clean text\n",
+        "df[\"post_text\"] = df[\"post_text\"].str.lower()\n",
+        "df[\"post_text\"] = df[\"post_text\"].str.replace(r\"\\d\", \"\", regex=True)\n",
+        "df[\"post_text\"] = df[\"post_text\"].str.replace(r\"[^\\w\\s]\", \"\", regex=True)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {},
+      "outputs": [],
+      "source": [
+        "# Get polarity using TextBlob\n",
