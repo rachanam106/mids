@@ -1,49 +1,41 @@
-{
-  "cells": [
-    {
-      "cell_type": "code",
-      "execution_count": null,
-      "metadata": {},
-      "outputs": [],
-      "source": [
-        "import pandas as pd\n",
-        "import numpy as np\n",
-        "from textblob import TextBlob\n",
-        "from sklearn.model_selection import train_test_split\n",
-        "from sklearn.feature_extraction.text import CountVectorizer\n",
-        "from sklearn.neighbors import KNeighborsClassifier\n",
-        "from sklearn.metrics import accuracy_score, classification_report, confusion_matrix"
-      ]
-    },
-    {
-      "cell_type": "code",
-      "execution_count": null,
-      "metadata": {},
-      "outputs": [],
-      "source": [
-        "# Load dataset\n",
-        "df = pd.read_csv(\"Mental-Health-Twitter.csv\")"
-      ]
-    },
-    {
-      "cell_type": "code",
-      "execution_count": null,
-      "metadata": {},
-      "outputs": [],
-      "source": [
-        "# Keep only the tweet text\n",
-        "df = df[['post_text']]\n",
-        "\n",
-        "# Clean text\n",
-        "df[\"post_text\"] = df[\"post_text\"].str.lower()\n",
-        "df[\"post_text\"] = df[\"post_text\"].str.replace(r\"\\d\", \"\", regex=True)\n",
-        "df[\"post_text\"] = df[\"post_text\"].str.replace(r\"[^\\w\\s]\", \"\", regex=True)"
-      ]
-    },
-    {
-      "cell_type": "code",
-      "execution_count": null,
-      "metadata": {},
-      "outputs": [],
-      "source": [
-        "# Get polarity using TextBlob\n",
+import pandas as pd
+import numpy as np
+from textblob import TextBlob
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+
+# Load dataset
+df = pd.read_csv("Mental-Health-Twitter.csv")
+
+# Keep only the tweet text
+df = df[['post_text']]
+
+# Clean text
+df["post_text"] = df["post_text"].str.lower()
+df["post_text"] = df["post_text"].str.replace(r"\d", "", regex=True)
+df["post_text"] = df["post_text"].str.replace(r"[^\w\s]", "", regex=True)
+
+# Get polarity using TextBlob
+df["polarity"] = df["post_text"].apply(lambda x: TextBlob(x).sentiment.polarity)
+
+# Assign sentiment label
+df["Sentiment"] = np.where(df["polarity"] >= 0, "Positive", "Negative")
+
+# Train-test split
+X_train, X_test, y_train, y_test = train_test_split(df["post_text"], df["Sentiment"], test_size=0.2, random_state=42)
+
+# Convert text to numeric features
+vectorizer = CountVectorizer()
+X_train = vectorizer.fit_transform(X_train)
+X_test = vectorizer.transform(X_test)
+
+# KNN classification
+knn = KNeighborsClassifier()
+knn.fit(X_train, y_train)
+
+# Accuracy and report
+y_pred = knn.predict(X_test)
+print("Accuracy:", round(accuracy_score(y_test, y_pred)*100, 2), "%")
+print(classification_report(y_test, y_pred))
